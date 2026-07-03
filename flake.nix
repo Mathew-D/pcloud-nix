@@ -11,7 +11,7 @@
       pkgs = import nixpkgs {
         inherit system;
         config.allowUnfreePredicate = pkg:
-          builtins.elem (if pkg ? pname then pkg.pname else (builtins.parseDrvName pkg.name).name) [ "pcloud-drive" ];
+          builtins.elem (if pkg ? pname then pkg.pname else (builtins.parseDrvName pkg.name).name) [ "pcloud" "pcloud-drive" ];
       };
     in
     {

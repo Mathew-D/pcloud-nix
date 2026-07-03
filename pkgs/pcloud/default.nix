@@ -1,15 +1,23 @@
-{ lib
-, appimageTools
+{ appimageTools
+, autoPatchelfHook
+, bashInteractive
+, dbus-glib
 , fetchurl
-, makeDesktopItem
-, libappindicator-gtk3
 , fuse
-, zlib
-, hicolor-icon-theme
+, gsettings-desktop-schemas
+, gtk3
+, lib
+, libdbusmenu-gtk3
+, libgbm
+, libxdamage
+, nss
+, patchelfUnstable
+, stdenv
+, udev
 }:
 
 let
-  pname = "pcloud-drive";
+  pname = "pcloud";
   version = "2.1.1";
 
   src = fetchurl {
@@ -18,48 +26,80 @@ let
     url = "https://def1.pcloud.com/cBZeyCak57Ztkt7yq7ZZZbs6E5kZ2ZZxIVZkZ9KHBHZJgZCzZrLZeFZ94ZkLZ5LZjgZr4Z6YZrFZmLZyQZoTZtwII5ZNdCm1yfsy2R4JIc8FyRvwzoi9lwk/pCloud.AppImage";
     hash = "sha256-WzZUDU4zvgxEGPpB362ceRARJBPMIYe+BTfDsaQkU2Q=";
   };
-
-  extracted = appimageTools.extractType2 {
-    inherit pname version src;
-  };
-
-  desktopItem = makeDesktopItem {
-    name = "pcloud";
-    desktopName = "pCloud";
-    exec = "env DESKTOPINTEGRATION=false pcloud";
-    terminal = false;
-    categories = [ "Network" "FileTransfer" "Utility" ];
-    icon = "pcloud";
-  };
 in
-appimageTools.wrapType2 {
-  inherit pname version src;
+stdenv.mkDerivation {
+  inherit pname version;
 
-  extraPkgs = pkgs: [
-    fuse
-    zlib
-    hicolor-icon-theme
-    libappindicator-gtk3
+  src = appimageTools.extractType2 {
+    inherit pname version;
+
+    src = "${src}/pCloud.AppImage";
+  };
+
+  dontConfigure = true;
+  dontBuild = true;
+
+  nativeBuildInputs = [
+    autoPatchelfHook
+    patchelfUnstable
   ];
 
-  extraInstallCommands = ''
-    install -Dm644 ${desktopItem}/share/applications/pcloud.desktop \
-      $out/share/applications/pcloud.desktop
+  buildInputs = [
+    bashInteractive
+    dbus-glib
+    fuse
+    gsettings-desktop-schemas
+    gtk3
+    libdbusmenu-gtk3
+    libgbm
+    libxdamage
+    nss
+    udev
+  ];
 
-    if [ -d ${extracted}/usr/share/icons/hicolor ]; then
-      mkdir -p $out/share/icons
-      cp -r ${extracted}/usr/share/icons/hicolor $out/share/icons/
-    fi
+  installPhase = ''
+    mkdir "$out"
+    cp -ar . "$out/app"
+    cd "$out"
 
-    ln -sf $out/bin/${pname} $out/bin/pcloud
+    rm app/AppRun
+
+    rm app/resources/app.asar.unpacked/node_modules/koffi/build/koffi/musl_x64/koffi.node
+    rm app/resources/app.asar.unpacked/node_modules/koffi/build/koffi/openbsd_x64/koffi.node
+
+    mkdir bin
+    mv app/usr/share .
+    mv app/usr/lib .
+
+    mkdir share/applications
+    substitute \
+      app/pcloud.desktop \
+      share/applications/pcloud.desktop \
+      --replace 'Exec=AppRun' 'Exec=${pname}'
+
+    ln -snf $out/share/icons/hicolor/512x512/apps/pcloud.png app/.DirIcon
+    ln -snf $out/share/icons/hicolor/512x512/apps/pcloud.png app/pcloud.png
+
+    cat > bin/pcloud <<EOF
+    #! $SHELL -e
+
+    # Required for the file picker dialog - otherwise pcloud crashes.
+    export XDG_DATA_DIRS="${gsettings-desktop-schemas}/share/gsettings-schemas/${gsettings-desktop-schemas.name}:${gtk3}/share/gsettings-schemas/${gtk3.name}:$XDG_DATA_DIRS"
+
+    exec "$out/app/pcloud"
+    EOF
+    chmod +x bin/pcloud
   '';
 
   meta = with lib; {
-    description = "pCloud Drive desktop client packaged from the upstream AppImage";
+    description = "Secure and simple to use cloud storage for your files; pCloud Drive, Electron Edition";
     homepage = "https://www.pcloud.com/";
-    license = licenses.unfree;
-    mainProgram = "pcloud";
-    platforms = [ "x86_64-linux" ];
+    changelog = "https://www.pcloud.com/release-notes/linux.html";
+    downloadPage = "https://www.pcloud.com/release-notes/linux.html";
     sourceProvenance = with sourceTypes; [ binaryNativeCode ];
+    license = licenses.unfree;
+    maintainers = [ ];
+    platforms = [ "x86_64-linux" ];
+    mainProgram = "pcloud";
   };
 }
