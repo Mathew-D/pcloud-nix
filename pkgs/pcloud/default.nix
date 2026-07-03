@@ -16,7 +16,7 @@ let
     # pCloud serves the AppImage behind a time-bound publink; refresh this URL
     # and hash when upstream rotates the published artifact.
     url = "https://def1.pcloud.com/cBZeyCak57Ztkt7yq7ZZZbs6E5kZ2ZZxIVZkZ9KHBHZJgZCzZrLZeFZ94ZkLZ5LZjgZr4Z6YZrFZmLZyQZoTZtwII5ZNdCm1yfsy2R4JIc8FyRvwzoi9lwk/pCloud.AppImage";
-    hash = "sha256-5b36540d4e33be0c4418fa41dfad9c7910112413cc2187be0537c3b1a4245364";
+    hash = "sha256-WzZUDU4zvgxEGPpB362ceRARJBPMIYe+BTfDsaQkU2Q=";
   };
 
   extracted = appimageTools.extractType2 {
