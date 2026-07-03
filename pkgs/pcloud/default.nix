@@ -1,4 +1,5 @@
 { appimageTools
+, alsa-lib
 , autoPatchelfHook
 , bashInteractive
 , dbus-glib
@@ -32,9 +33,7 @@ stdenv.mkDerivation {
   inherit pname version;
 
   src = appimageTools.extractType2 {
-    inherit pname version;
-
-    src = "${src}/pCloud.AppImage";
+    inherit pname version src;
   };
 
   dontConfigure = true;
@@ -46,6 +45,7 @@ stdenv.mkDerivation {
   ];
 
   buildInputs = [
+    alsa-lib
     bashInteractive
     dbus-glib
     fuse
@@ -86,9 +86,19 @@ stdenv.mkDerivation {
     #! $SHELL -e
 
     # Required for the file picker dialog - otherwise pcloud crashes.
-    export XDG_DATA_DIRS="${gsettings-desktop-schemas}/share/gsettings-schemas/${gsettings-desktop-schemas.name}:${gtk3}/share/gsettings-schemas/${gtk3.name}:$XDG_DATA_DIRS"
+    export XDG_DATA_DIRS="${gsettings-desktop-schemas}/share/gsettings-schemas/${gsettings-desktop-schemas.name}:${gtk3}/share/gsettings-schemas/${gtk3.name}:\$XDG_DATA_DIRS"
 
-    exec "$out/app/pcloud"
+    # On NixOS, OpenGL/EGL lives in /run/opengl-driver at runtime.
+    export LD_LIBRARY_PATH="/run/opengl-driver/lib:/run/opengl-driver-32/lib:\$LD_LIBRARY_PATH"
+
+    # fusermount3 is a SUID wrapper provided by NixOS at runtime; pCloud needs
+    # it in PATH to perform FUSE mounts.
+    export PATH="/run/wrappers/bin:\$PATH"
+
+    # Disable the GPU/EGL process; Electron sanitises LD_LIBRARY_PATH before
+    # passing it to subprocesses so the GPU renderer can't find libEGL.so.1.
+    # Software rendering is sufficient for pCloud's UI.
+    exec "$out/app/pcloud" --disable-gpu "\$@"
     EOF
     chmod +x bin/pcloud
   '';
