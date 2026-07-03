@@ -9,6 +9,7 @@
 , lib
 , libdbusmenu-gtk3
 , libgbm
+, libglvnd
 , libxdamage
 , nss
 , patchelfUnstable
@@ -52,6 +53,7 @@ stdenv.mkDerivation {
     gtk3
     libdbusmenu-gtk3
     libgbm
+    libglvnd
     libxdamage
     nss
     udev
