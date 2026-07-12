@@ -2,8 +2,9 @@
 , alsa-lib
 , autoPatchelfHook
 , bashInteractive
+, cacert
+, curl
 , dbus-glib
-, fetchurl
 , fuse
 , gsettings-desktop-schemas
 , gtk3
@@ -15,18 +16,39 @@
 , nss
 , patchelfUnstable
 , stdenv
+, stdenvNoCC
 , udev
 }:
 
 let
   pname = "pcloud";
   version = "2.1.1";
+  publinkCode = "XZtwII5Zjf5noLYtDwJ1qkyAXaqujuvVKBbX";
 
-  src = fetchurl {
-    # pCloud serves the AppImage behind a time-bound publink; refresh this URL
-    # and hash when upstream rotates the published artifact.
-    url = "https://def1.pcloud.com/cBZeyCak57Ztkt7yq7ZZZbs6E5kZ2ZZxIVZkZ9KHBHZJgZCzZrLZeFZ94ZkLZ5LZjgZr4Z6YZrFZmLZyQZoTZtwII5ZNdCm1yfsy2R4JIc8FyRvwzoi9lwk/pCloud.AppImage";
-    hash = "sha256-WzZUDU4zvgxEGPpB362ceRARJBPMIYe+BTfDsaQkU2Q=";
+  src = stdenvNoCC.mkDerivation {
+    name = "pCloud.AppImage";
+
+    nativeBuildInputs = [ curl ];
+
+    outputHashAlgo = "sha256";
+    outputHashMode = "flat";
+    outputHash = "5b36540d4e33be0c4418fa41dfad9c7910112413cc2187be0537c3b1a4245364";
+
+    buildCommand = ''
+      export SSL_CERT_FILE="${cacert}/etc/ssl/certs/ca-bundle.crt"
+
+      apiResponse="$(curl -fsSL "https://api.pcloud.com/getpublinkdownload?code=${publinkCode}")"
+      dlHost="$(printf '%s' "$apiResponse" | grep -E -o '[a-zA-Z0-9-]+\.pcloud\.com' | head -n 1)"
+      dlPath="$(printf '%s' "$apiResponse" | sed -n 's/.*"path"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | sed 's#\\/#/#g')"
+
+      if [ -z "$dlHost" ] || [ -z "$dlPath" ]; then
+        echo "Failed to parse pCloud download API response" >&2
+        echo "$apiResponse" >&2
+        exit 1
+      fi
+
+      curl -fL "https://$dlHost$dlPath" -o "$out"
+    '';
   };
 in
 stdenv.mkDerivation {
