@@ -23,7 +23,7 @@
 let
   pname = "pcloud";
   version = "2.1.1";
-  publinkCode = "XZtwII5Zjf5noLYtDwJ1qkyAXaqujuvVKBbX";
+  publinkCode = "XZopbc5ZpqOBs9mkVRk4zDHD7TjDJpQBcfzk";
 
   src = stdenvNoCC.mkDerivation {
     name = "pCloud.AppImage";
@@ -32,7 +32,7 @@ let
 
     outputHashAlgo = "sha256";
     outputHashMode = "flat";
-    outputHash = "5b36540d4e33be0c4418fa41dfad9c7910112413cc2187be0537c3b1a4245364";
+    outputHash = "3fddf5e975ffb38b968f5814cd8d0f2db1473ba49c1b2072f02911b5755e1f42";
 
     buildCommand = ''
       export SSL_CERT_FILE="${cacert}/etc/ssl/certs/ca-bundle.crt"
