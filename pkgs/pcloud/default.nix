@@ -22,7 +22,7 @@
 
 let
   pname = "pcloud";
-  version = "2.1.1";
+  version = "2.3.0";
   publinkCode = "XZopbc5ZpqOBs9mkVRk4zDHD7TjDJpQBcfzk";
 
   src = stdenvNoCC.mkDerivation {
