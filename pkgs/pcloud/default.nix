@@ -23,7 +23,7 @@
 let
   pname = "pcloud";
   version = "2.3.0";
-  publinkCode = "XZopbc5ZpqOBs9mkVRk4zDHD7TjDJpQBcfzk";
+  appImageUrl = "https://pnyc1.pcloud.com/cBZ4iXkeF7ZO8fVuU7ZZZKekmJkZ2ZZ2oVZkZa1u2HZSQZAYZ7YZtpZlHZx4Zy4Z5mZMmZaLZfLZeYZgzZkmZrYdRJZTvvpJEuvyNYJg1Il6hlSSbh8zDeX/pCloud.AppImage";
 
   src = stdenvNoCC.mkDerivation {
     name = "pCloud.AppImage";
@@ -36,18 +36,7 @@ let
 
     buildCommand = ''
       export SSL_CERT_FILE="${cacert}/etc/ssl/certs/ca-bundle.crt"
-
-      apiResponse="$(curl -fsSL "https://api.pcloud.com/getpublinkdownload?code=${publinkCode}")"
-      dlHost="$(printf '%s' "$apiResponse" | grep -E -o '[a-zA-Z0-9-]+\.pcloud\.com' | head -n 1)"
-      dlPath="$(printf '%s' "$apiResponse" | sed -n 's/.*"path"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | sed 's#\\/#/#g')"
-
-      if [ -z "$dlHost" ] || [ -z "$dlPath" ]; then
-        echo "Failed to parse pCloud download API response" >&2
-        echo "$apiResponse" >&2
-        exit 1
-      fi
-
-      curl -fL "https://$dlHost$dlPath" -o "$out"
+      curl -fL "${appImageUrl}" -o "$out"
     '';
   };
 in
