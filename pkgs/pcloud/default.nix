@@ -23,7 +23,9 @@
 let
   pname = "pcloud";
   version = "2.3.0";
-  appImageUrl = "https://pnyc1.pcloud.com/cBZ4iXkeF7ZO8fVuU7ZZZKekmJkZ2ZZ2oVZkZa1u2HZSQZAYZ7YZtpZlHZx4Zy4Z5mZMmZaLZfLZeYZgzZkmZrYdRJZTvvpJEuvyNYJg1Il6hlSSbh8zDeX/pCloud.AppImage";
+  # pCloud rotates the direct AppImage URL periodically; update this when the
+  # upstream link expires again.
+  appImageUrl = "https://def1.pcloud.com/cBZ4iXkeF7ZO8fVuU7ZZZA4JmJkZ2ZZuP4ZkZa1u2HZSQZAYZ7YZtpZlHZx4Zy4Z5mZMmZaLZfLZeYZgzZkmZrYdRJZjKfvpAlIwih7ECMcwPYohzqrsB4V/pCloud.AppImage";
 
   src = stdenvNoCC.mkDerivation {
     name = "pCloud.AppImage";
