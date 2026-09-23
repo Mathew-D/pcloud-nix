@@ -22,7 +22,7 @@
 
 let
   pname = "pcloud";
-  version = "2.2.1";
+  version = "2.3.0";
   publinkCode = "XZopbc5ZpqOBs9mkVRk4zDHD7TjDJpQBcfzk";
 
   src = stdenvNoCC.mkDerivation {
@@ -32,7 +32,7 @@ let
 
     outputHashAlgo = "sha256";
     outputHashMode = "flat";
-    outputHash = "3fddf5e975ffb38b968f5814cd8d0f2db1473ba49c1b2072f02911b5755e1f42";
+    outputHash = "07e404be9e37ef2dffb6541fea74f10601f2a33fe490bcaa895fb5b238f81af6";
 
     buildCommand = ''
       export SSL_CERT_FILE="${cacert}/etc/ssl/certs/ca-bundle.crt"
