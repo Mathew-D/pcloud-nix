@@ -8,6 +8,7 @@
 , fuse
 , gsettings-desktop-schemas
 , gtk3
+, jq
 , lib
 , libdbusmenu-gtk3
 , libgbm
@@ -22,13 +23,16 @@
 
 let
   pname = "pcloud";
-  version = "2.3.1";
-  appImageUrl = "https://pnyc1.pcloud.com/cBZ4iXkeF7ZO8fVuU7ZZZlSu2JkZ2ZZ2oVZkZa1u2HZSQZAYZ7YZtpZlHZx4Zy4Z5mZMmZaLZfLZeYZgzZkmZrYdRJZmBULG1DDNBJDJBOAGxOi0BUNBrjk/pCloud.AppImage";
+  version = "2.3.0";
+  # pCloud rotates the share URL periodically. Resolve the current signed
+  # download URL through the public API instead of pinning a brittle HTML link.
+  appImageCode = "XZrYdRJZLS6RF4kf6Jy6GFr4jqkc4S34Rlgy";
+  appImageUrl = "https://api.pcloud.com/getpublinkdownload?code=${appImageCode}";
 
   src = stdenvNoCC.mkDerivation {
     name = "pCloud.AppImage";
 
-    nativeBuildInputs = [ curl ];
+    nativeBuildInputs = [ curl jq ];
 
     outputHashAlgo = "sha256";
     outputHashMode = "flat";
@@ -36,7 +40,13 @@ let
 
     buildCommand = ''
       export SSL_CERT_FILE="${cacert}/etc/ssl/certs/ca-bundle.crt"
-      curl -fL "${appImageUrl}" -o "$out"
+
+      json="$(curl -fsSL "${appImageUrl}")"
+      host="$(printf '%s\n' "$json" | jq -r '.hosts[0]')"
+      path="$(printf '%s\n' "$json" | jq -r '.path')"
+      dwltag="$(printf '%s\n' "$json" | jq -r '.dwltag')"
+
+      curl -fL "https://$host$path?dwltag=$dwltag" -o "$out"
     '';
   };
 in
