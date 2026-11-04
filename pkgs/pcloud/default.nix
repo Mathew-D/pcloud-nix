@@ -23,10 +23,10 @@
 
 let
   pname = "pcloud";
-  version = "2.3.0";
+  version = "2.3.1";
   # pCloud rotates the share URL periodically. Resolve the current signed
   # download URL through the public API instead of pinning a brittle HTML link.
-  appImageCode = "XZrYdRJZLS6RF4kf6Jy6GFr4jqkc4S34Rlgy";
+  appImageCode = "XZtJmbJZp6YyRQOCSjbAwPVct6fTXJloyHhy";
   appImageUrl = "https://api.pcloud.com/getpublinkdownload?code=${appImageCode}";
 
   src = stdenvNoCC.mkDerivation {
@@ -36,7 +36,7 @@ let
 
     outputHashAlgo = "sha256";
     outputHashMode = "flat";
-    outputHash = "07e404be9e37ef2dffb6541fea74f10601f2a33fe490bcaa895fb5b238f81af6";
+    outputHash = "652a158f20c989f0e184d982a400171f13c3e0672b6b90045e280be5071e015e";
 
     buildCommand = ''
       export SSL_CERT_FILE="${cacert}/etc/ssl/certs/ca-bundle.crt"
