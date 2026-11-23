@@ -23,11 +23,10 @@
 
 let
   pname = "pcloud";
-  version = "2.3.1";
-  # pCloud rotates the share URL periodically. Resolve the current signed
-  # download URL through the public API instead of pinning a brittle HTML link.
-  appImageCode = "XZtJmbJZp6YyRQOCSjbAwPVct6fTXJloyHhy";
-  appImageUrl = "https://api.pcloud.com/getpublinkdownload?code=${appImageCode}";
+  version = "2.4.0";
+  # Use the same update feed as the pCloud desktop app. The AppImage URL in
+  # the response is short-lived, so resolve it at build time.
+  updateFeedUrl = "https://api.pcloud.com/getlastversion?os=ELECTRONV2";
 
   src = stdenvNoCC.mkDerivation {
     name = "pCloud.AppImage";
@@ -36,17 +35,20 @@ let
 
     outputHashAlgo = "sha256";
     outputHashMode = "flat";
-    outputHash = "652a158f20c989f0e184d982a400171f13c3e0672b6b90045e280be5071e015e";
+    outputHash = "3c4f0201e06433f86ff6c7bf20d3fb8fd95a5ff6cf4114018ce1aec65292af44";
 
     buildCommand = ''
       export SSL_CERT_FILE="${cacert}/etc/ssl/certs/ca-bundle.crt"
 
-      json="$(curl -fsSL "${appImageUrl}")"
-      host="$(printf '%s\n' "$json" | jq -r '.hosts[0]')"
-      path="$(printf '%s\n' "$json" | jq -r '.path')"
-      dwltag="$(printf '%s\n' "$json" | jq -r '.dwltag')"
+      json="$(curl -fsSL "${updateFeedUrl}")"
+      url="$(printf '%s\n' "$json" | jq -r '[.files[] | select(.url | endswith("/pCloud.AppImage")) | .url][0]')"
 
-      curl -fL "https://$host$path?dwltag=$dwltag" -o "$out"
+      if [ -z "$url" ] || [ "$url" = "null" ]; then
+        echo "Failed to find pCloud.AppImage URL in update feed" >&2
+        exit 1
+      fi
+
+      curl -fL "$url" -o "$out"
     '';
   };
 in
@@ -87,8 +89,9 @@ stdenv.mkDerivation {
 
     rm app/AppRun
 
-    rm app/resources/app.asar.unpacked/node_modules/koffi/build/koffi/musl_x64/koffi.node
-    rm app/resources/app.asar.unpacked/node_modules/koffi/build/koffi/openbsd_x64/koffi.node
+    rm -f app/resources/app.asar.unpacked/node_modules/koffi/build/koffi/musl_x64/koffi.node
+    rm -f app/resources/app.asar.unpacked/node_modules/koffi/build/koffi/openbsd_x64/koffi.node
+    rm -rf app/resources/app.asar.unpacked/node_modules/@koromix/koffi-linux-x64/musl_x64
 
     mkdir bin
     mv app/usr/share .

@@ -14,5 +14,8 @@ Usage:
 nix run .
 ```
 
-The upstream AppImage is published behind a rotating pCloud download URL. If
-the fetch stops working, update the URL and hash in `pkgs/pcloud/default.nix`.
+The upstream AppImage is published behind a rotating pCloud download URL. Run
+`./update.py` to fetch the latest release from pCloud's update feed, refresh
+the version and hash, and update `pkgs/pcloud/default.nix`. Use
+`./update.py --force` to re-check the current release hash without waiting for
+a new version.
